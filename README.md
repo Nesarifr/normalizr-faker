@@ -49,6 +49,7 @@ Esta base de datos estara dentro de la carpeta "DB".
 La carga de productos se relaciona con la base de datos MariaDB.
 - Para la creacion de productos, la pagina de inicio posee un formulario para la tarea.
 - Para la busqueda, modificacion y eliminacion de productos se debera accerder a la pagina administrador atraves del boton en la parte superior derecha.
+    - Se pueden probar casos en los que no exista el producto, es decir con ID que no exista en la base de datos.
 Una vez ahi se podra realizar las pruebas de las ruta GET, PUT y DELETE, rutas contenidas en el router.
 
 ### :computer: Herramientas utilizadas:
