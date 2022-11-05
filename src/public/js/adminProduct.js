@@ -184,8 +184,6 @@ let searchProduct= ()=>{
         .then(res => res.json())
         .then(data=> {
             const newProducto=data[0]
-            console.log(data);
-            console.log(newProducto);
             if(data.error){
                 Swal.fire({
                     icon: 'error',
@@ -231,7 +229,6 @@ let modifProducto= ()=>{
             },
             body: JSON.stringify(product)
         }
-        console.log(configuraciones.body);
         contenedorPrincipal.innerHTML=""
         fetch(url,configuraciones )
         .then(resp => resp.json())
@@ -244,7 +241,6 @@ let modifProducto= ()=>{
                     
                 })
             } else {
-            console.log(data);
             const htmlProductos = 
             `<div class="card-productos">
                 <div class="imagen">
@@ -281,7 +277,6 @@ let deleteProduct=()=>{
         fetch(url,configuraciones )
         .then(resp => resp.json())
         .then(data=>{
-            console.log(data);
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',

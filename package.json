@@ -12,7 +12,7 @@
   "main": "createTable.js",
   "scripts": {
     "dev": "nodemon ./server.js",
-    "create": "node ./scripts/createTable.js",
+    "create": "node ./src/scripts/createTable.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

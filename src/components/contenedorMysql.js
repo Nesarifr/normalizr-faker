@@ -7,9 +7,7 @@ export class ContenedorMysql {
     }
     async save(element){
         try {
-            console.log(element);
             const [newid]= await this.database.from(this.tableName).insert(element);
-            console.log(element);
             return newid
         } catch (error) {
             return {error: error}
@@ -19,11 +17,10 @@ export class ContenedorMysql {
     async getById(id){
         try {
             const element = await this.database.from(this.tableName).where("id",id)
-            if(element.length){
-                return {error: error}
-            }
             const returnElement = element.map(elem=>({...elem}))
-            return returnElement
+            if(!returnElement.length){
+                return {error: error}
+            } else{ return returnElement }
         } catch (error) {
             return {error: error}
         }
@@ -45,12 +42,8 @@ export class ContenedorMysql {
 
     async deletedById(id){
         try {
-            if (!tableExist) {
-                return {error: error}
-            }
             const element = await this.database.from(this.tableName).where("id",id)
-            console.log(element);
-            if(element.length){
+            if(!element.length){
                 return {error: error}
             }
             await this.database.from(this.tableName).where("id",id).del()
@@ -63,13 +56,10 @@ export class ContenedorMysql {
     async actualizaByID(id , actualizacion){
 
         try {
-            console.log("ingresa al actualziar");
             const element = await this.database.from(this.tableName).where("id",id)
-            console.log(element);
-            if(product.length){
-                return {error: error}
+            if(!element.length){
+                return {error: "No existe el archivo solicitado"}
             }
-            console.log(actualizacion);
             const newtitle=actualizacion.title
             const newPrice=actualizacion.price
             const newUrl = actualizacion.thumbnail

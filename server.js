@@ -45,8 +45,6 @@ httpServer.listen(PORT, ()=> console.log(`Server listening on port ${PORT}`));
 app.get('/', async (req, res)=>{
     try{
         const productosAll = await productsMysql.getAll()
-        console.log(optionsSqliteDB);
-        console.log(productosAll);
         if ( productosAll){
             res.render('home', {productos : productosAll})
         }  else res.render('partials/error', {productos: {error: 'No existe una lista de productos todavia'}})  
@@ -58,8 +56,6 @@ app.get('/', async (req, res)=>{
 
 /* ---------------------- Websocket --------------------- */
 io.on('connection', async (socket)=>{
-    console.log("nuevo usuario conectado");
-    
     //productos iniciales / ya guardados
     socket.emit('allProducts', await productsMysql.getAll())
     //nuevo producto
