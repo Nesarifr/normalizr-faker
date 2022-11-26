@@ -1,9 +1,9 @@
 import Express  from "express";
-import { optionsMariaDB } from '../src/config/mysqlconfig.js';
-import { ContenedorMysql } from '../src/components/contenedorMysql.js';
+import { ContenedorArchivo } from "../managers/ContenedorArchivo.js";
+
 /* ------------------------ configuracion del routerProducts ------------------------ */
-const routerProducts = Express.Router();
-const ApiPedido= new ContenedorMysql(optionsMariaDB, 'products')
+export const routerProducts = Express.Router();
+export const products = new ContenedorArchivo('products')
 
 routerProducts.use(Express.json());
 routerProducts.use(Express.urlencoded({extended: true}))
@@ -16,9 +16,9 @@ routerProducts.get('/:id', async (req, res)=>{
     try{
         console.log("Metodo get ID");
         const {id} = req.params
-        const existeProducto = await ApiPedido.getById(id)
+        const existeProducto = await products.getById(id)
         if(existeProducto.length){
-            res.json(await ApiPedido.getById(parseInt(id)))
+            res.json(await products.getById(parseInt(id)))
         } else return res.json({error: 'No existe el archivo solicitado'})
     }
     catch(error){
@@ -41,7 +41,7 @@ routerProducts.post('/', esAdmin, async (req, res)=> {
     try{
         console.log("Se crea nuevo producto con POST / con verificacion de administrador");
         const loadProduct = req.body
-        const nuevoId = await ApiPedido.save(loadProduct)
+        const nuevoId = await products.save(loadProduct)
         res.json({
             id: nuevoId,
             nuevoProducto: loadProduct
@@ -61,7 +61,7 @@ routerProducts.put('/:id', esAdmin, async (req, res)=>{
         console.log("se modifica el producto con PUT /:id con verificacion de  Admin");
         const {id} = req.params
         const upDate = req.body
-        const actualizacion = await ApiPedido.actualizaByID(parseInt(id), upDate)
+        const actualizacion = await products.actualizaByID(parseInt(id), upDate)
         if(actualizacion){
             res.json(actualizacion)
         } else res.json({error: "No se pudo actualizar el producto solicitado"})
@@ -80,9 +80,9 @@ routerProducts.delete('/:id', esAdmin, async (req, res)=>{
     try{
         console.log("se realiza un DELETE /:id con verificacion de admin");
         const {id} = req.params
-        const productoID=await ApiPedido.getById(id)
+        const productoID=await products.getById(id)
         if(productoID.length){ //getById devuelve null en caso de que no exita el elemento con ID
-            await ApiPedido.deletedById(parseInt(id))
+            await products.deletedById(parseInt(id))
             res.json({error: "Producto eliminado"})
         } else {res.json({error: "El producto no existe"})}
     }
@@ -92,4 +92,4 @@ routerProducts.delete('/:id', esAdmin, async (req, res)=>{
     
 })
 
-export default routerProducts;
+export default {routerProducts, products}

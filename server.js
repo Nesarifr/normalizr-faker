@@ -4,17 +4,17 @@ import * as IoServer from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { engine } from 'express-handlebars';
-import routerProducts  from './router/productos.js';
+import {routerProducts, products}  from './src/router/productos.js';
+import { normalize, schema} from "normalizr";
+
 /* ------------------- import de clase contenedora y otros ------------------ */
-import {verificarRequest} from './src/components/utils.js'
-import { ContenedorMysql } from './src/components/contenedorMysql.js';
-import { optionsMariaDB } from './src/config/mysqlconfig.js';
-import { optionsSqliteDB } from './src/config/mysqlconfig.js';
+
+import { ContenedorArchivo } from './src/managers/ContenedorArchivo.js';
 
 /* --------------------------- constantes globales -------------------------- */
 
-const chatSqlite = new ContenedorMysql(optionsSqliteDB, 'chats')
-const productsMysql = new ContenedorMysql(optionsMariaDB, 'products')
+const chatsUsers = new ContenedorArchivo('chats')
+const apiproducts = new ContenedorArchivo('products')
 /* ------------------- constantes necesarias del servidor ------------------- */
 const app = express();
 const httpServer = new HttpServer.createServer(app); 
@@ -44,7 +44,7 @@ httpServer.listen(PORT, ()=> console.log(`Server listening on port ${PORT}`));
 /* --------- GET '/' -> devuelve todos los productos, conecto con handlebars --------- */
 app.get('/', async (req, res)=>{
     try{
-        const productosAll = await productsMysql.getAll()
+        const productosAll = await apiproducts.getAllRandom()
         if ( productosAll){
             res.render('home', {productos : productosAll})
         }  else res.render('partials/error', {productos: {error: 'No existe una lista de productos todavia'}})  
@@ -57,27 +57,47 @@ app.get('/', async (req, res)=>{
 /* ---------------------- Websocket --------------------- */
 io.on('connection', async (socket)=>{
     //productos iniciales / ya guardados
-    socket.emit('allProducts', await productsMysql.getAll())
+    socket.emit('allProducts', await apiproducts.getAllRandom())
     //nuevo producto
     socket.on('newProduct', async newProducto =>{
         newProducto.price = parseFloat(newProducto.price);
-        await productsMysql.save(newProducto)
-        const productosAll = await productsMysql.getAll()
+        await products.save(newProducto)
+        const productosAll = await products.getAllRandom()
         io.sockets.emit('refreshTable', productosAll)
         }
     )
 
     //mensajes hasta el inicio
-    socket.emit('allMensajes', await chatSqlite.getAll())
+    socket.emit('allMensajes', await normalizarMensajes())
     //nuevo msj
     socket.on('newMsjChat', async newMsjChat =>{
-        await chatSqlite.save(newMsjChat);
-        const msjsAll = await chatSqlite.getAll();
+        await chatsUsers.save(newMsjChat);
+        const msjsAll = await normalizarMensajes()
         io.sockets.emit('refreshChat', msjsAll )
     })
 
 })
 
+/* ------------------------- normalizar los mensajes ------------------------ */
+/* --------------------------- schemas de mensajes -------------------------- */
+const authorSchema =  new schema.Entity("autores", {}, {idAttribute: "email"});
+const mensajesSchema = new schema.Entity("mensajes", {author: authorSchema});
+//objeto global
+const chatSchema = new schema.Entity("chat", {
+    chat: [mensajesSchema]
+})
+
+/* ------------------------- aplicando normalizacion ------------------------ */
+const normalizarChat = (msjs)=>{
+    const normalizeData = normalize({id:"Chat-Historial", chat: msjs}, chatSchema);
+    return normalizeData;
+}
+
+const normalizarMensajes = async ()=>{
+    const results = await chatsUsers.getAll();
+    const mensajesNormalizados = normalizarChat(results);
+    return mensajesNormalizados;
+}
 
 
 
